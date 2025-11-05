@@ -183,6 +183,36 @@ def make_stone():
             ]
     return stone_p
 
+def small_heart(h_x, h_y):
+    global l
+    s_heart_points = [
+        (h_x+l, h_y),
+        (h_x+l, h_y+l),
+        (h_x, h_y+l),
+        (h_x, h_y+3*l),
+        (h_x+l, h_y+3*l),
+        (h_x+l, h_y+4*l),
+        (h_x+2*l, h_y+4*l),
+        (h_x+2*l, h_y+5*l),
+        (h_x+3*l, h_y+5*l),
+        (h_x+3*l, h_y+6*l),
+        (h_x+4*l, h_y+6*l),
+        (h_x+4*l, h_y+5*l),
+        (h_x+5*l, h_y+5*l),
+        (h_x+5*l, h_y+4*l),
+        (h_x+6*l, h_y+4*l),
+        (h_x+6*l, h_y+3*l),
+        (h_x+7*l, h_y+3*l),
+        (h_x+7*l, h_y+l),
+        (h_x+6*l, h_y+l),
+        (h_x+6*l, h_y),
+        (h_x+4*l, h_y),
+        (h_x+4*l, h_y+l),
+        (h_x+3*l, h_y+l),
+        (h_x+3*l, h_y),
+    ]
+    return s_heart_points
+
 
 def dino_move(mode, x, y):
     global legs, one, two, count
@@ -343,7 +373,7 @@ def recursion():
 
 
 def game_start():
-    global widgets, mode, body, legs, eye, one, two, x, y, count, stone_list, collis, real_name, score_num, score, nn
+    global widgets, mode, body, legs, eye, one, two, x, y, count, stone_list, collis, real_name, score_num, score, nn, s_heart
     for i in widgets:
         c.delete(i)
     collis = False
@@ -369,17 +399,19 @@ def game_start():
     stone0 = c.create_polygon(make_stone(), fill="gray", outline="")
     stone1 = c.create_polygon(make_stone(), fill="magenta", outline="")
     stone_list = [stone0, stone1]
+    s_heart = c.create_polygon(small_heart(1100, 20), fill="red", outline="")
     recursion()
 
 
 def menu():
-    global mode, x, y, l, body, eye, name_Str, num_bg, widgets, one, two, legs, bg_color, fg_color, ch_widgets, real_name, dino_color, d_color, new_color_dino, high_score
+    global mode, x, y, l, body, eye, name_Str, num_bg, widgets, one, two, legs, bg_color, fg_color, ch_widgets, real_name, dino_color, d_color, new_color_dino, high_score, s_heart
     x = 150
     y = 480
     if collis == True:
         mode = "hurt"
         c.delete(body)
         c.delete(eye)
+        c.delete(s_heart)
         for i in legs:
             c.delete(i)
         body = c.create_polygon(points(), fill=new_color_dino, outline="")
