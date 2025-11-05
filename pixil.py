@@ -138,9 +138,9 @@ def hurt(x,y):
     return black, white
 
 def make_stone():
-    global stone_pos, l
+    global thing_pos, l
     s_x = random.randint(1210, 2100)
-    s_y = random.choice(stone_pos)
+    s_y = random.choice(thing_pos)
     stone_p = [(s_x, s_y-5*l),
             (s_x, s_y-3*l),
             (s_x+1*l, s_y-3*l),
@@ -209,10 +209,65 @@ def small_heart(h_x, h_y):
         (h_x+4*l, h_y),
         (h_x+4*l, h_y+l),
         (h_x+3*l, h_y+l),
-        (h_x+3*l, h_y),
+        (h_x+3*l, h_y)
     ]
     return s_heart_points
 
+def big_heart():
+    global l, thing_pos
+    s_x = random.randint(1210, 2100)
+    s_y = random.choice(thing_pos)
+    b_heart_points = [
+        (s_x+6*l, s_y),
+        (s_x+7*l, s_y),
+        (s_x+7*l, s_y-l),
+        (s_x+8*l, s_y-l),
+        (s_x+8*l, s_y-2*l),
+        (s_x+9*l, s_y-2*l),
+        (s_x+9*l, s_y-3*l),
+        (s_x+10*l, s_y-3*l),
+        (s_x+10*l, s_y-4*l),
+        (s_x+11*l, s_y-4*l),
+        (s_x+11*l, s_y-5*l),
+        (s_x+12*l, s_y-5*l),
+        (s_x+12*l, s_y-6*l),
+        (s_x+13*l, s_y-6*l),
+        (s_x+13*l, s_y-8*l),
+        (s_x+12*l, s_y-8*l),
+        (s_x+12*l, s_y-9*l),
+        (s_x+11*l, s_y-9*l),
+        (s_x+11*l, s_y-10*l),
+        (s_x+10*l, s_y-10*l),
+        (s_x+10*l, s_y-11*l),
+        (s_x+8*l, s_y-11*l),
+        (s_x+8*l, s_y-10*l),
+        (s_x+7*l, s_y-10*l),
+        (s_x+7*l, s_y-9*l),
+        (s_x+6*l, s_y-9*l),
+        (s_x+6*l, s_y-10*l),
+        (s_x+5*l, s_y-10*l),
+        (s_x+5*l, s_y-11*l),
+        (s_x+3*l, s_y-11*l),
+        (s_x+3*l, s_y-10*l),
+        (s_x+2*l, s_y-10*l),
+        (s_x+2*l, s_y-9*l),
+        (s_x+l, s_y-9*l),
+        (s_x+l, s_y-8*l),
+        (s_x, s_y-8*l),
+        (s_x, s_y-6*l),
+        (s_x+l, s_y-6*l),
+        (s_x+l, s_y-5*l),
+        (s_x+2*l, s_y-5*l),
+        (s_x+2*l, s_y-4*l),
+        (s_x+3*l, s_y-4*l),
+        (s_x+3*l, s_y-3*l),
+        (s_x+4*l, s_y-3*l),
+        (s_x+4*l, s_y-2*l),
+        (s_x+5*l, s_y-2*l),
+        (s_x+5*l, s_y-l),
+        (s_x+6*l, s_y-l)
+    ]
+    return b_heart_points
 
 def dino_move(mode, x, y):
     global legs, one, two, count
@@ -332,7 +387,7 @@ def move_down(event):
             eye = c.create_rectangle(x+l*15.5, y-17.5*l, x+l*14.5, y-16.5*l, fill="black", outline="")
 
 def collisions():
-    global stone_list, collis
+    global stone_list, collis, s_hearts_list, l
     for i in stone_list:
         stone_box = c.bbox(i)
         dino_box = c.bbox(body)
@@ -341,6 +396,7 @@ def collisions():
                 stone_box[3] < dino_box[1] or  
                 stone_box[1] > dino_box[3]):
             collis = True
+            c.delete(s_hearts_list[-1])
             break
 
 
@@ -373,7 +429,7 @@ def recursion():
 
 
 def game_start():
-    global widgets, mode, body, legs, eye, one, two, x, y, count, stone_list, collis, real_name, score_num, score, nn, s_heart
+    global widgets, mode, body, legs, eye, one, two, x, y, count, stone_list, collis, real_name, score_num, score, nn, s_heart, s_hearts_list
     for i in widgets:
         c.delete(i)
     collis = False
@@ -400,6 +456,7 @@ def game_start():
     stone1 = c.create_polygon(make_stone(), fill="magenta", outline="")
     stone_list = [stone0, stone1]
     s_heart = c.create_polygon(small_heart(1100, 20), fill="red", outline="")
+    s_hearts_list = [s_heart]
     recursion()
 
 
@@ -411,7 +468,6 @@ def menu():
         mode = "hurt"
         c.delete(body)
         c.delete(eye)
-        c.delete(s_heart)
         for i in legs:
             c.delete(i)
         body = c.create_polygon(points(), fill=new_color_dino, outline="")
@@ -491,7 +547,7 @@ score = tk.IntVar(value=score_num)
 score_text = tk.Label(root, textvariable = score, font=("Arial", 25, "bold"), bg = bg_color, fg=fg_color)
 score_w = c.create_window(100, 50, window=score_text)
 high_score = 0
-stone_pos = [470, 270, 670]
+thing_pos = [470, 270, 670]
 speed = 75
 nn = 2
 obj_speed = 20
