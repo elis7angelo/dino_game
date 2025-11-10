@@ -1,6 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
 import random
+import sys
+import os
+
+def resource_path(relative_path):
+    try:
+    # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 root = tk.Tk()
 root.title("Pixil")
@@ -275,7 +286,6 @@ def dino_move(mode, x, y):
     if counter >= 6:
         c.itemconfig(body, fill=new_color_dino)
         m = "step"
-        print(done)
     try:
         for i in legs:
             c.delete(i)
@@ -292,7 +302,6 @@ def dino_move(mode, x, y):
     elif mode == "hurt_run":
         leg1, leg2 = step(x, y, 0)
         counter += 1
-        print(counter, "cc")
         if count == 0:
             c.itemconfig(body, fill=bg_color)
             d_black = True
@@ -336,7 +345,6 @@ def change_bg():
 def dino_color_selected(v_name, index, write):              
     global dino_color, new_color_dino, body, legs
     n_color = d_color.get()
-    print(f"New color = {n_color}")
     if n_color == "green":
         new_color_dino = "chartreuse"
     elif n_color == "red":
@@ -428,7 +436,6 @@ def collisions():
                 c.delete(s_hearts_list[-1])
                 s_hearts_list.pop(-1)
                 c.move(i, -12000, 0)
-                print(len(s_hearts_list))
                 mode = "hurt_run"
                 if len(s_hearts_list) <= 0:
                     collis = True
@@ -455,7 +462,6 @@ def recursion():
     if m == "step":
         mode = "step"
         counter = 0
-        print("steps again")
         m = ""
     c.after(speed, lambda: dino_move(mode, x, y))
     c.after(speed, stone_fce)
