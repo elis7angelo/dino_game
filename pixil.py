@@ -215,7 +215,7 @@ def small_heart(h_x, h_y):
 
 def big_heart():
     global l, thing_pos
-    s_x = random.randint(1210, 2100)
+    s_x = 1800
     s_y = random.choice(thing_pos)
     b_heart_points = [
         (s_x+6*l, s_y),
@@ -270,7 +270,12 @@ def big_heart():
     return b_heart_points
 
 def dino_move(mode, x, y):
-    global legs, one, two, count
+    global legs, one, two, count, bg_color, d_black, counter, m
+    d_black = False
+    if counter >= 6:
+        c.itemconfig(body, fill=new_color_dino)
+        m = "step"
+        print(done)
     try:
         for i in legs:
             c.delete(i)
@@ -284,10 +289,27 @@ def dino_move(mode, x, y):
             count = 1
         else:
             count = 0
-    one = c.create_polygon(leg1, fill=new_color_dino, outline="")
-    two = c.create_polygon(leg2, fill=new_color_dino, outline="")
+    elif mode == "hurt_run":
+        leg1, leg2 = step(x, y, 0)
+        counter += 1
+        print(counter, "cc")
+        if count == 0:
+            c.itemconfig(body, fill=bg_color)
+            d_black = True
+            count = 1
+        else:
+            c.itemconfig(body, fill=new_color_dino)
+            d_black = False
+            count = 0
+        
+    if d_black == True:
+        one = c.create_polygon(leg1, fill=bg_color, outline="")
+        two = c.create_polygon(leg2, fill=bg_color, outline="")
+    else:
+        one = c.create_polygon(leg1, fill=new_color_dino, outline="")
+        two = c.create_polygon(leg2, fill=new_color_dino, outline="")
     legs = [one, two]
-    if mode == "hurt":
+    if mode == "hurt" or mode == "hurt_run":
         black, white = hurt(x, y)
         legs.append(black)
         legs.append(white)
@@ -341,11 +363,13 @@ def dino_color_selected(v_name, index, write):
 
 
 def stone_fce():
-    global stone_list, score_num, score, obj_speed
+    global stone_list, score_num, score, obj_speed, b_hearts_list
     stone_color = ["magenta", "cyan", "gray", "chocolate", "peru", "darkorange"]
     for i in stone_list:
         c.move(i, -obj_speed, 0)
         if c.bbox(i)[2] <= random.randint(-100, -10):
+            if random.randint(1, 20) == 7 and len(b_hearts_list) == 0:
+                b_hearts_list.append(c.create_polygon(big_heart(), fill = "red", outline = ""))
             c.itemconfig(i, fill=random.choice(stone_color))
             if c.bbox(i)[0] <= 0:
                 score_num += 1
@@ -357,10 +381,15 @@ def stone_fce():
             else:
                 n_y = random.choice([0, 200, -200])
             c.move(i, random.randint(1210, 1800), n_y)
+    for i in b_hearts_list:
+        c.move(i, -obj_speed, 0)
+        if c.bbox(i)[2] <= 10:
+            c.delete(i)
+            b_hearts_list = []
 
 def move_up(event):
     global body, one, two, eye, legs, x, y, mode, new_color_dino
-    if mode == "step":
+    if mode == "step" or mode == "hurt_run":
         if c.bbox(body)[3] > 300:
             c.delete(body)
             c.delete(eye)
@@ -375,7 +404,7 @@ def move_up(event):
 
 def move_down(event):
     global body, one, two, eye, legs, x, y, mode, new_color_dino
-    if mode == "step":
+    if mode == "step" or mode == "hurt_run":
         if c.bbox(body)[3] < 600:
             c.delete(body)
             c.delete(eye)
@@ -387,21 +416,47 @@ def move_down(event):
             eye = c.create_rectangle(x+l*15.5, y-17.5*l, x+l*14.5, y-16.5*l, fill="black", outline="")
 
 def collisions():
-    global stone_list, collis, s_hearts_list, l
-    for i in stone_list:
-        stone_box = c.bbox(i)
+    global stone_list, collis, s_hearts_list, l, b_hearts_list, mode
+    if mode != "hurt_run":
+        for i in stone_list:
+            stone_box = c.bbox(i)
+            dino_box = c.bbox(body)
+            if not (stone_box[2] < dino_box[0] or  
+                    stone_box[0] > dino_box[2] or  
+                    stone_box[3] < dino_box[1] or  
+                    stone_box[1] > dino_box[3]):
+                c.delete(s_hearts_list[-1])
+                s_hearts_list.pop(-1)
+                c.move(i, -12000, 0)
+                print(len(s_hearts_list))
+                mode = "hurt_run"
+                if len(s_hearts_list) <= 0:
+                    collis = True
+                    break
+            
+    for i in b_hearts_list:
+        heart_box = c.bbox(i)
         dino_box = c.bbox(body)
-        if not (stone_box[2] < dino_box[0] or  
-                stone_box[0] > dino_box[2] or  
-                stone_box[3] < dino_box[1] or  
-                stone_box[1] > dino_box[3]):
-            collis = True
-            c.delete(s_hearts_list[-1])
-            break
-
+        if not (heart_box[2] < dino_box[0] or  
+                heart_box[0] > dino_box[2] or  
+                heart_box[3] < dino_box[1] or  
+                heart_box[1] > dino_box[3]):
+            b_hearts_list = []
+            c.delete(i)
+            try: 
+                s_hea = c.create_polygon(small_heart(c.bbox(s_hearts_list[-1])[0]-40, 20), fill="red", outline="")
+                s_hearts_list.append(s_hea)
+            except IndexError:
+                collis = True
+                break
 
 def recursion():
-    global stone_list, score_num, stone2, stone_list, speed, nn, done, obj_speed
+    global stone_list, score_num, stone2, stone_list, speed, nn, done, obj_speed, m, mode, counter
+    if m == "step":
+        mode = "step"
+        counter = 0
+        print("steps again")
+        m = ""
     c.after(speed, lambda: dino_move(mode, x, y))
     c.after(speed, stone_fce)
     c.after(speed, collisions)
@@ -429,7 +484,7 @@ def recursion():
 
 
 def game_start():
-    global widgets, mode, body, legs, eye, one, two, x, y, count, stone_list, collis, real_name, score_num, score, nn, s_heart, s_hearts_list
+    global widgets, mode, body, legs, eye, one, two, x, y, count, stone_list, collis, real_name, score_num, score, nn, s_heart, s_hearts_list, b_hearts_list
     for i in widgets:
         c.delete(i)
     collis = False
@@ -457,11 +512,12 @@ def game_start():
     stone_list = [stone0, stone1]
     s_heart = c.create_polygon(small_heart(1100, 20), fill="red", outline="")
     s_hearts_list = [s_heart]
+    b_hearts_list = []
     recursion()
 
 
 def menu():
-    global mode, x, y, l, body, eye, name_Str, num_bg, widgets, one, two, legs, bg_color, fg_color, ch_widgets, real_name, dino_color, d_color, new_color_dino, high_score, s_heart
+    global mode, x, y, l, body, eye, name_Str, num_bg, widgets, one, two, legs, bg_color, fg_color, ch_widgets, real_name, dino_color, d_color, new_color_dino, high_score, s_heart, speed, obj_speed, done, counter
     x = 150
     y = 480
     if collis == True:
@@ -477,6 +533,10 @@ def menu():
         one = c.create_polygon(leg1, fill=new_color_dino, outline= "")
         two = c.create_polygon(leg2, fill=new_color_dino, outline= "")
         legs = [one, two, white]
+        speed = 75
+        obj_speed = 20          
+        done = False
+        counter = 0
         c.after(1000, lambda: dino_move("idle", x, y))
     else:
         body = c.create_polygon(points(), fill=new_color_dino, outline="")
@@ -522,7 +582,7 @@ def menu():
             if got_w not in widgets:
                 widgets.append(got_w)
 
-    
+m = ""    
 mode = "idle"
 l = 8
 collis = False
@@ -552,6 +612,9 @@ speed = 75
 nn = 2
 obj_speed = 20
 done = False
+stone_list = []
+b_hearts_list = []
+counter = 0
 
 menu()
 
